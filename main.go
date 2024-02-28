@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"order-management/entity"
+	adminDelivery "order-management/features/admin/delivery/admin"
+	adminRepository "order-management/features/admin/repository"
+	adminUsecase "order-management/features/admin/usecase"
 	"order-management/utils"
 	"os"
 	"os/signal"
@@ -38,7 +42,10 @@ func main() {
 		return c.JSON(http.StatusOK, map[string]interface{}{"status": true})
 	})
 
-	// v1 := e.Group("/v1")
+	v1 := e.Group("/v1")
+
+	adminV1Group := v1.Group("/admin")
+	adminDelivery.NewAdminHandler(adminV1Group, adminUsecase.NewAdminUsecase(adminRepository.NewAdminRepository(DB)))
 
 	serveGracefulShutdown(e)
 }
@@ -88,18 +95,18 @@ func serveGracefulShutdown(e *echo.Echo) {
 
 func migrateDB() {
 	DB.AutoMigrate(
-	// &OrderItems{},
-	// &PaymentDetails{},
-	// &CartItems{},
-	// &CourierDetails{},
-	// &CustomerPayment{},
-	// &CustomerAddress{},
-	// &Products{},
-	// &ProductsCategory{},
-	// &Admins{},
-	// &AdminType{},
-	// &Sessions{},
-	// &Customers{},
+		// &OrderItems{},
+		// &PaymentDetails{},
+		// &CartItems{},
+		// &CourierDetails{},
+		// &CustomerPayment{},
+		// &CustomerAddress{},
+		// &Products{},
+		// &ProductsCategory{},
+		&entity.Admin{},
+		// &AdminType{},
+		// &Sessions{},
+		&entity.User{},
 	// &Orders{},
 	)
 }
