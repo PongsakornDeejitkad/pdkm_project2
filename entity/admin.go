@@ -8,7 +8,7 @@ import (
 
 type Admin struct {
 	ID        int            `json:"id" gorm:"primary_key"`
-	Username  string         `json:"username" gorm:"not null;varchar(50)"`
+	Username  string         `json:"user_name" gorm:"not null;varchar(50)"`
 	Password  string         `json:"password" gorm:"not null;type:text;size:200"`
 	FirstName string         `json:"first_name" gorm:"varchar;not null"`
 	LastName  string         `json:"last_name" gorm:"varchar;not null"`
@@ -19,7 +19,7 @@ type Admin struct {
 	UpdatedAt time.Time      `json:"updated_at" gorm:"default: NOW()"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
 
-	Type AdminType `json:"-" gorm:"foreignKey:TypeID"`
+	// Type AdminType `json:"-" gorm:"foreignKey:TypeID"`
 }
 
 type AdminType struct {
@@ -29,5 +29,5 @@ type AdminType struct {
 	CreatedAt  time.Time `json:"created_at" gorm:"default:NOW()"`
 	UpdatedAt  time.Time `json:"updated_at" gorm:"default:NOW()"`
 
-	Admins []Admin `json:"-" gorm:"foreignKey:TypeID"`
+	// Admins []Admin `json:"-" gorm:"foreignKey:TypeID"`
 }
