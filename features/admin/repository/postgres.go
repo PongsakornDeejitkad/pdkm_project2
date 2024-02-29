@@ -26,3 +26,13 @@ func (r *adminRepository) CreateAdmin(admin entity.Admin) error {
 
 	return nil
 }
+func (r *adminRepository) ListAdmins() ([]entity.Admin, error) {
+	admins := []entity.Admin{}
+	if err := r.db.Find(&admins).Error; err != nil {
+		log.Println("ListAdmins error: ", err)
+		return nil, err
+	}
+	return admins, nil
+}
+
+// func (r *adminRepository) UpdateAdmin(admin entity.Admin)
