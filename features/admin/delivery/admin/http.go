@@ -15,7 +15,7 @@ type AdminHandler struct {
 func NewAdminHandler(e *echo.Group, u domain.AdminUsecase) *AdminHandler {
 	h := AdminHandler{usecase: u}
 
-	e.GET("/test", h.TestAdmin)
+	e.GET("", h.ListAdmins)
 	e.POST("", h.CreateAdmin)
 
 	return &h
@@ -35,6 +35,13 @@ func (h *AdminHandler) CreateAdmin(c echo.Context) error {
 	return c.NoContent(http.StatusCreated)
 }
 
-func (h *AdminHandler) TestAdmin(c echo.Context) error {
-	return c.JSON(http.StatusOK, map[string]interface{}{"status": "admin test success"})
+func (h *AdminHandler) ListAdmins(c echo.Context) error {
+	admins, err := h.usecase.ListAdmins()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, admins)
 }
