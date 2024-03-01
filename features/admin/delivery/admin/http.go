@@ -17,6 +17,7 @@ func NewAdminHandler(e *echo.Group, u domain.AdminUsecase) *AdminHandler {
 
 	e.GET("", h.ListAdmins)
 	e.POST("", h.CreateAdmin)
+	e.GET("/:id", h.GetAdmin)
 
 	return &h
 }
@@ -44,4 +45,15 @@ func (h *AdminHandler) ListAdmins(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, admins)
+}
+
+func (h *AdminHandler) GetAdmin(c echo.Context) error {
+	adminIdString := c.Param("id")
+	admin, err := h.usecase.GetAdmin(adminIdString)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err,
+		})
+	}
+	return c.JSON(http.StatusOK, admin)
 }

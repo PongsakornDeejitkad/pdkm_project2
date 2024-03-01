@@ -4,6 +4,7 @@ import (
 	"log"
 	"order-management/domain"
 	"order-management/entity"
+	"strconv"
 
 	"gorm.io/gorm"
 )
@@ -33,6 +34,20 @@ func (r *adminRepository) ListAdmins() ([]entity.Admin, error) {
 		return nil, err
 	}
 	return admins, nil
+}
+
+func (r *adminRepository) GetAdmin(id string) (*entity.Admin, error) {
+	admin := &entity.Admin{}
+	adminId, _ := strconv.Atoi(id)
+	if err := r.db.First(admin, adminId).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			log.Println("Admin not found")
+			return nil, err
+		}
+		log.Println("Error retrieving admin:", err)
+		return nil, err
+	}
+	return admin, nil
 }
 
 // func (r *adminRepository) UpdateAdmin(admin entity.Admin)

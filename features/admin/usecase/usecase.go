@@ -20,10 +20,9 @@ func (u *adminUsecase) CreateAdmin(admin entity.Admin) error {
 }
 
 func (u *adminUsecase) ListAdmins() ([]entity.Admin, error) {
-	admins, err := u.adminRepo.ListAdmins()
-	if err != nil {
-		// Handle the error, log, or return it based on your use case.
-		return nil, err
-	}
-	return admins, nil
+	return u.adminRepo.ListAdmins()
+}
+
+func (u *adminUsecase) GetAdmin(id string) (*entity.Admin, error) {
+	return u.adminRepo.GetAdmin(id)
 }
