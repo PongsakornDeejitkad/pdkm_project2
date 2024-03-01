@@ -38,7 +38,11 @@ func (r *adminRepository) ListAdmins() ([]entity.Admin, error) {
 
 func (r *adminRepository) GetAdmin(id string) (*entity.Admin, error) {
 	admin := &entity.Admin{}
-	adminId, _ := strconv.Atoi(id)
+	adminId, err := strconv.Atoi(id)
+	if err != nil {
+		log.Println("Invalid admin ID")
+		return nil, err
+	}
 	if err := r.db.First(admin, adminId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			log.Println("Admin not found")
@@ -50,4 +54,51 @@ func (r *adminRepository) GetAdmin(id string) (*entity.Admin, error) {
 	return admin, nil
 }
 
-// func (r *adminRepository) UpdateAdmin(admin entity.Admin)
+func (r *adminRepository) UpdateAdmin(id string, admin entity.Admin) error {
+	adminId, err := strconv.Atoi(id)
+	if err != nil {
+		log.Println("Invalid admin ID")
+		return err
+	}
+
+	existingAdmin := &entity.Admin{}
+	if err := r.db.First(&existingAdmin, adminId).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			log.Println("Admin not found")
+			return err
+		}
+		log.Println("Error retrieving admin:", err)
+		return err
+	}
+	if err := r.db.Model(&entity.Admin{}).Where("id = ?", adminId).Updates(&admin).Error; err != nil {
+		log.Println("Error updating admin:", err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *adminRepository) DeleteAdmin(id string) error {
+	adminId, err := strconv.Atoi(id)
+
+	if err != nil {
+		log.Println("Invalid admin ID:", id)
+		return err
+	}
+	existingAdmin := &entity.Admin{}
+	if err := r.db.First(&existingAdmin, adminId).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			log.Println("Admin not found")
+			return err
+		}
+		log.Println("Error retrieving admin:", err)
+		return err
+	}
+
+	if err := r.db.Model(&entity.Admin{}).Where("id = ?", adminId).Delete(&existingAdmin).Error; err != nil {
+		log.Println("Error delete admin:", err)
+		return err
+	}
+	return nil
+
+}

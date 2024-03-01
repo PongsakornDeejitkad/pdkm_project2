@@ -26,3 +26,10 @@ func (u *adminUsecase) ListAdmins() ([]entity.Admin, error) {
 func (u *adminUsecase) GetAdmin(id string) (*entity.Admin, error) {
 	return u.adminRepo.GetAdmin(id)
 }
+func (u *adminUsecase) UpdateAdmin(id string, admin entity.Admin) error {
+	return u.adminRepo.UpdateAdmin(id, admin)
+}
+
+func (u *adminUsecase) DeleteAdmin(id string) error {
+	return u.adminRepo.DeleteAdmin(id)
+}
