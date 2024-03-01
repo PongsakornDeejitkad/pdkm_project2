@@ -102,3 +102,22 @@ func (r *adminRepository) DeleteAdmin(id string) error {
 	return nil
 
 }
+
+func (r *adminRepository) CreateAdminType(adminType entity.AdminType) error {
+	if err := r.db.Create(&adminType).Error; err != nil {
+		log.Println("Create AdminType error: ", err)
+		return err
+	}
+
+	return nil
+
+}
+
+func (r *adminRepository) ListAdminTypes() ([]entity.AdminType, error) {
+	adminTypes := []entity.AdminType{}
+	if err := r.db.Find(&adminTypes).Error; err != nil {
+		log.Println("ListAdminTypes error: ", err)
+		return nil, err
+	}
+	return adminTypes, nil
+}

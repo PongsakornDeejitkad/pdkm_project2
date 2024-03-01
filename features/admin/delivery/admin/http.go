@@ -16,8 +16,10 @@ func NewAdminHandler(e *echo.Group, u domain.AdminUsecase) *AdminHandler {
 	h := AdminHandler{usecase: u}
 
 	e.GET("", h.ListAdmins)
-	e.POST("", h.CreateAdmin)
+	e.GET("/types", h.ListAdminTypes)
 	e.GET("/:id", h.GetAdmin)
+	e.POST("", h.CreateAdmin)
+	e.POST("/types", h.CreateAdminType)
 	e.PUT("/:id", h.UpdateAdmin)
 	e.DELETE("/:id", h.DeleteAdmin)
 
@@ -84,4 +86,30 @@ func (h *AdminHandler) DeleteAdmin(c echo.Context) error {
 		})
 	}
 	return c.NoContent(http.StatusOK)
+}
+
+func (h *AdminHandler) CreateAdminType(c echo.Context) error {
+	adminType := entity.AdminType{}
+	c.Bind(&adminType)
+
+	err := h.usecase.CreateAdminType(adminType)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err,
+		})
+	}
+
+	return c.NoContent(http.StatusCreated)
+
+}
+
+func (h *AdminHandler) ListAdminTypes(c echo.Context) error {
+	adminTypes, err := h.usecase.ListAdminTypes()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, adminTypes)
 }

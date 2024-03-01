@@ -33,3 +33,11 @@ func (u *adminUsecase) UpdateAdmin(id string, admin entity.Admin) error {
 func (u *adminUsecase) DeleteAdmin(id string) error {
 	return u.adminRepo.DeleteAdmin(id)
 }
+
+func (u *adminUsecase) CreateAdminType(adminType entity.AdminType) error {
+	return u.adminRepo.CreateAdminType(adminType)
+}
+
+func (u *adminUsecase) ListAdminTypes() ([]entity.AdminType, error) {
+	return u.adminRepo.ListAdminTypes()
+}

@@ -63,7 +63,7 @@ func migrateDB() {
 		// &Products{},
 		// &ProductsCategory{},
 		&entity.Admin{},
-		// &AdminType{},
+		&entity.AdminType{},
 		// &Sessions{},
 		// &entity.User{},
 	// &Orders{},
@@ -97,6 +97,7 @@ func main() {
 
 	adminDelivery.NewAdminHandler(adminV1Group, adminUsecase.NewAdminUsecase(adminRepository.NewAdminRepository(DB)))
 	productDelivery.NewProductHandler(productV1Group, productUsecase.NewProductUsecase(productRepository.NewProductRepository(DB)))
+	
 	serveGracefulShutdown(e)
 }
 
