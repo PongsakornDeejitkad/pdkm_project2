@@ -7,9 +7,9 @@ type AdminUsecase interface {
 	CreateAdminType(adminType entity.AdminType) error
 	ListAdmins() ([]entity.Admin, error)
 	ListAdminTypes() ([]entity.AdminType, error)
-	GetAdmin(id string) (*entity.Admin, error)
-	UpdateAdmin(id string, admin entity.Admin) error
-	DeleteAdmin(id string) error
+	GetAdmin(id int) (*entity.Admin, error)
+	UpdateAdmin(id int, admin entity.Admin) error
+	DeleteAdmin(id int) error
 }
 
 type AdminRepository interface {
@@ -17,7 +17,7 @@ type AdminRepository interface {
 	CreateAdminType(adminType entity.AdminType) error
 	ListAdmins() ([]entity.Admin, error)
 	ListAdminTypes() ([]entity.AdminType, error)
-	GetAdmin(id string) (*entity.Admin, error)
-	UpdateAdmin(id string, admin entity.Admin) error
-	DeleteAdmin(id string) error
+	GetAdmin(id int) (*entity.Admin, error)
+	UpdateAdmin(id int, admin entity.Admin) error
+	DeleteAdmin(id int) error
 }

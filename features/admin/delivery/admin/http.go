@@ -1,9 +1,11 @@
 package delivery
 
 import (
+	"log"
 	"net/http"
 	"order-management/domain"
 	"order-management/entity"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -30,6 +32,9 @@ func (h *AdminHandler) CreateAdmin(c echo.Context) error {
 	admin := entity.Admin{}
 	c.Bind(&admin)
 
+	// VALIDATOR LOGIC
+	// ffffdsfsdf
+
 	err := h.usecase.CreateAdmin(admin)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
@@ -53,10 +58,15 @@ func (h *AdminHandler) ListAdmins(c echo.Context) error {
 
 func (h *AdminHandler) GetAdmin(c echo.Context) error {
 	adminIdString := c.Param("id")
-	admin, err := h.usecase.GetAdmin(adminIdString)
+	adminId, err := strconv.Atoi(adminIdString)
 	if err != nil {
+		log.Println("Invalid admin ID")
+		return err
+	}
+	admin, err_usecase := h.usecase.GetAdmin(adminId)
+	if err_usecase != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"message": err,
+			"message": err_usecase,
 		})
 	}
 	return c.JSON(http.StatusOK, admin)
@@ -65,12 +75,17 @@ func (h *AdminHandler) GetAdmin(c echo.Context) error {
 func (h *AdminHandler) UpdateAdmin(c echo.Context) error {
 	admin := entity.Admin{}
 	adminIdString := c.Param("id")
+	adminId, err := strconv.Atoi(adminIdString)
+	if err != nil {
+		log.Println("Invalid admin ID")
+		return err
+	}
 	c.Bind(&admin)
 
-	err := h.usecase.UpdateAdmin(adminIdString, admin)
-	if err != nil {
+	err_usecase := h.usecase.UpdateAdmin(adminId, admin)
+	if err_usecase != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"message": err,
+			"message": err_usecase,
 		})
 	}
 	return c.NoContent(http.StatusOK)
@@ -78,11 +93,16 @@ func (h *AdminHandler) UpdateAdmin(c echo.Context) error {
 
 func (h *AdminHandler) DeleteAdmin(c echo.Context) error {
 	adminIdString := c.Param("id")
-
-	err := h.usecase.DeleteAdmin(adminIdString)
+	adminId, err := strconv.Atoi(adminIdString)
 	if err != nil {
+		log.Println("Invalid admin ID:", adminId)
+		return err
+	}
+
+	err_usecase := h.usecase.DeleteAdmin(adminId)
+	if err_usecase != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"message": err,
+			"message": err_usecase,
 		})
 	}
 	return c.NoContent(http.StatusOK)
