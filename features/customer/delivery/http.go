@@ -104,6 +104,16 @@ func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 		return err
 	}
 
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	validateError := validate.Struct(customer)
+
+	if validateError != nil {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"message": "Validation error",
+			"errors":  validateError.Error(),
+		})
+	}
+
 	usecaseError := h.usecase.UpdateCustomer(customerId, customer)
 	if usecaseError != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
