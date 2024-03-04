@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	"order-management/entity"
-	adminDelivery "order-management/features/admin/delivery/admin"
+	adminDelivery "order-management/features/admin/delivery"
 	adminRepository "order-management/features/admin/repository"
 	adminUsecase "order-management/features/admin/usecase"
 	productDelivery "order-management/features/product/delivery"
@@ -17,6 +17,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -82,7 +83,10 @@ func init() {
 	if err = connectDB(); err != nil {
 		log.Fatal(err)
 	}
+
 }
+
+var validate *validator.Validate
 
 func main() {
 	e := echo.New()
@@ -97,7 +101,7 @@ func main() {
 
 	adminDelivery.NewAdminHandler(adminV1Group, adminUsecase.NewAdminUsecase(adminRepository.NewAdminRepository(DB)))
 	productDelivery.NewProductHandler(productV1Group, productUsecase.NewProductUsecase(productRepository.NewProductRepository(DB)))
-	
+
 	serveGracefulShutdown(e)
 }
 

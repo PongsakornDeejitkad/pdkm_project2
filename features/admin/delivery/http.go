@@ -7,6 +7,7 @@ import (
 	"order-management/entity"
 	"strconv"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
 
@@ -32,8 +33,15 @@ func (h *AdminHandler) CreateAdmin(c echo.Context) error {
 	admin := entity.Admin{}
 	c.Bind(&admin)
 
-	// VALIDATOR LOGIC
-	// ffffdsfsdf
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	validateError := validate.Struct(admin)
+
+	if validateError != nil {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"message": "Validation error",
+			"errors":  validateError.Error(),
+		})
+	}
 
 	err := h.usecase.CreateAdmin(admin)
 	if err != nil {
@@ -82,6 +90,16 @@ func (h *AdminHandler) UpdateAdmin(c echo.Context) error {
 	}
 	c.Bind(&admin)
 
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	validateError := validate.Struct(admin)
+
+	if validateError != nil {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"message": "Validation error",
+			"errors":  validateError.Error(),
+		})
+	}
+
 	err_usecase := h.usecase.UpdateAdmin(adminId, admin)
 	if err_usecase != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
@@ -111,6 +129,16 @@ func (h *AdminHandler) DeleteAdmin(c echo.Context) error {
 func (h *AdminHandler) CreateAdminType(c echo.Context) error {
 	adminType := entity.AdminType{}
 	c.Bind(&adminType)
+
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	validateError := validate.Struct(adminType)
+
+	if validateError != nil {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"message": "Validation error",
+			"errors":  validateError.Error(),
+		})
+	}
 
 	err := h.usecase.CreateAdminType(adminType)
 	if err != nil {
