@@ -117,10 +117,10 @@ func (h *AdminHandler) DeleteAdmin(c echo.Context) error {
 		return err
 	}
 
-	err_usecase := h.usecase.DeleteAdmin(adminId)
-	if err_usecase != nil {
+	usecaseError := h.usecase.DeleteAdmin(adminId)
+	if usecaseError != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"message": err_usecase,
+			"message": usecaseError,
 		})
 	}
 	return c.NoContent(http.StatusOK)
