@@ -16,3 +16,13 @@ type Customer struct {
 	UpdatedAt time.Time      `json:"updated_at" gorm:"default: NOW()"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
 }
+
+type CustomerLoginRequest struct {
+	Email    string `json:"email" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
+
+type CustomerLoginResponse struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}

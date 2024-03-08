@@ -88,3 +88,19 @@ func (r *customerRepository) UpdateCustomer(id int, customer entity.Customer) er
 	}
 	return nil
 }
+
+func (r *customerRepository) GetCustomerByEmail(email string) (entity.Customer, error) {
+	customer := entity.Customer{}
+
+	if err := r.db.Where("email = ?", email).First(&customer).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			log.Println("Customer not found")
+			return customer, err
+		}
+
+		log.Println("GetCustomerByEmail error:", err)
+		return customer, err
+	}
+
+	return customer, nil
+}

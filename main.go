@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"order-management/entity"
 	adminDelivery "order-management/features/admin/delivery"
 	adminRepository "order-management/features/admin/repository"
@@ -14,13 +15,14 @@ import (
 	productDelivery "order-management/features/product/delivery"
 	productRepository "order-management/features/product/repository"
 	productUsecase "order-management/features/product/usecase"
+	"order-management/middleware"
 	"order-management/utils"
 	"os"
 	"os/signal"
 	"time"
 
-	echojwt "github.com/labstack/echo-jwt"
 	"github.com/labstack/echo/v4"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -91,31 +93,41 @@ func init() {
 func main() {
 	e := echo.New()
 
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
+	e.Use(echoMiddleware.Logger())
+	e.Use(echoMiddleware.Recover())
 
 	// Unauthenticated route
-	e.GET("/", auth.accessible)
+	e.GET("/", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]interface{}{"success": true})
+	})
 
 	// Restricted group
 	v1 := e.Group("/v1")
-	{
-		config := echojwt.Config{
-			KeyFunc: auth.getKey,
-		}
-		v1.Use(echojwt.WithConfig(config))
-		v1.GET("", auth.restricted)
-	}
 
-	adminV1Group := v1.Group("/admins")
+	adminGroup := v1.Group("")
+	adminGroup.Use(middleware.AdminAuth())
 
-	productV1Group := v1.Group("/product")
+	customerGroup := v1.Group("")
+	customerGroup.Use(middleware.CustomerAuth())
 
-	customerV1Group := v1.Group("/customers")
+	// {
+	// 	config := echojwt.Config{
+	// 		KeyFunc: middleware.GetKey,
+	// 	}
+	// 	v1.Use(echojwt.WithConfig(config))
+	// 	v1.GET("", middleware.Restricted)
+	// }
 
-	adminDelivery.NewAdminHandler(adminV1Group, adminUsecase.NewAdminUsecase(adminRepository.NewAdminRepository(DB)))
-	productDelivery.NewProductHandler(productV1Group, productUsecase.NewProductUsecase(productRepository.NewProductRepository(DB)))
-	customerDelivery.NewCustomerHandler(customerV1Group, customerUsecase.NewCustomerUsecase(customerRepository.NewCustomerRepository(DB)))
+	// adminV1Group := v1.Group("/admins")
+	// productV1Group := v1.Group("/product")
+	// customerV1Group := v1.Group("/customers")
+
+	adminDelivery.NewAdminHandler(adminGroup, adminUsecase.NewAdminUsecase(adminRepository.NewAdminRepository(DB)))
+	// adminDelivery.NewCustomerHandler(customerGroup, adminUsecase.NewAdminUsecase(adminRepository.NewAdminRepository(DB)))
+
+	productDelivery.NewProductHandler(customerGroup, productUsecase.NewProductUsecase(productRepository.NewProductRepository(DB)))
+	customerDelivery.NewCustomerHandler(customerGroup, customerUsecase.NewCustomerUsecase(customerRepository.NewCustomerRepository(DB)))
+
 	serveGracefulShutdown(e)
 }
 
@@ -130,7 +142,7 @@ func connectDB() error {
 	var err error
 	DB, err = gorm.Open(postgres.Open(connectionString), &gorm.Config{})
 
-	migrateDB()
+	// migrateDB()
 
 	return err
 }

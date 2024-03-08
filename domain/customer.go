@@ -8,6 +8,8 @@ type CustomerUsecase interface {
 	GetCustomer(id int) (*entity.Customer, error)
 	DeleteCustomer(id int) error
 	UpdateCustomer(id int, customer entity.Customer) error
+
+	CustomerLogin(entity.CustomerLoginRequest) (entity.CustomerLoginResponse, error)
 }
 
 type CustomerRepository interface {
@@ -16,4 +18,6 @@ type CustomerRepository interface {
 	GetCustomer(id int) (*entity.Customer, error)
 	DeleteCustomer(id int) error
 	UpdateCustomer(id int, customer entity.Customer) error
+
+	GetCustomerByEmail(email string) (entity.Customer, error)
 }

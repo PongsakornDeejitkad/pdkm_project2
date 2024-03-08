@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
 type CustomerHandler struct {
@@ -19,9 +20,10 @@ func NewCustomerHandler(e *echo.Group, u domain.CustomerUsecase) *CustomerHandle
 	h := CustomerHandler{usecase: u}
 	e.POST("", h.CreateCustomer)
 	e.GET("", h.ListCustomers)
-	e.GET("/:id", h.GetCustomer)
+	e.GET("/customer/:id", h.GetCustomer)
 	e.DELETE("/:id", h.DeleteCustomer)
 	e.PUT("/:id", h.UpdateCustomer)
+	e.POST("/customer/login", h.CustomerLogin)
 
 	return &h
 }
@@ -122,4 +124,35 @@ func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 	}
 	return c.NoContent(http.StatusOK)
 
+}
+
+func (h *CustomerHandler) CustomerLogin(c echo.Context) error {
+	customerReq := entity.CustomerLoginRequest{}
+	c.Bind(&customerReq)
+
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	validateError := validate.Struct(customerReq)
+
+	if validateError != nil {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"message": "Validation error",
+			"errors":  validateError.Error(),
+		})
+	}
+
+	customerRes, err := h.usecase.CustomerLogin(customerReq)
+	if err == gorm.ErrRecordNotFound {
+		return c.JSON(http.StatusForbidden, map[string]interface{}{
+			"message": "email or password is incorrect",
+		})
+
+	}
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": err,
+		})
+	}
+
+	return c.JSON(http.StatusOK, customerRes)
 }
