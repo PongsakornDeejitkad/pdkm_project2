@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"order-management/entity"
 	adminDelivery "order-management/features/admin/delivery"
 	adminRepository "order-management/features/admin/repository"
@@ -20,6 +19,7 @@ import (
 	"os/signal"
 	"time"
 
+	echojwt "github.com/labstack/echo-jwt"
 	"github.com/labstack/echo/v4"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -90,14 +90,27 @@ func init() {
 
 func main() {
 	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]interface{}{"status": true})
-	})
 
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+
+	// Unauthenticated route
+	e.GET("/", auth.accessible)
+
+	// Restricted group
 	v1 := e.Group("/v1")
+	{
+		config := echojwt.Config{
+			KeyFunc: auth.getKey,
+		}
+		v1.Use(echojwt.WithConfig(config))
+		v1.GET("", auth.restricted)
+	}
 
 	adminV1Group := v1.Group("/admins")
+
 	productV1Group := v1.Group("/product")
+
 	customerV1Group := v1.Group("/customers")
 
 	adminDelivery.NewAdminHandler(adminV1Group, adminUsecase.NewAdminUsecase(adminRepository.NewAdminRepository(DB)))
