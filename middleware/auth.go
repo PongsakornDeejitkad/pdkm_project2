@@ -39,11 +39,11 @@ func AdminAuth() echo.MiddlewareFunc {
 func CustomerAuth() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			errMessage := "Authentication failed."
+			errMessage := "Authentications failed."
 
-			ignoreRoutes := []string{"/v1/customer/login"}
+			ignoreRoutes := []string{"/v1/customer/login", "/v1/customers", "/v1/customer"}
 			for _, v := range ignoreRoutes {
-				if c.Request().RequestURI == v {
+				if c.Path() == v {
 					return next(c)
 				}
 			}

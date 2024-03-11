@@ -12,7 +12,7 @@ type ProductHandler struct {
 	usecase domain.ProductUsecase
 }
 
-func NewProductHandler(e *echo.Group, u domain.ProductUsecase) *ProductHandler {
+func NewHandler(e *echo.Group, u domain.ProductUsecase) *ProductHandler {
 	h := ProductHandler{usecase: u}
 
 	// e.GET("/", h.TestProduct)

@@ -2,15 +2,20 @@ package usecase
 
 import (
 	"errors"
+	"log"
 	"order-management/domain"
 	"order-management/entity"
+	"os"
+
+	"github.com/golang-jwt/jwt"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type customerUsecase struct {
 	customerRepo domain.CustomerRepository
 }
 
-func NewCustomerUsecase(customerRepo domain.CustomerRepository) domain.CustomerUsecase {
+func NewUsecase(customerRepo domain.CustomerRepository) domain.CustomerUsecase {
 	return &customerUsecase{
 		customerRepo: customerRepo,
 	}
@@ -18,6 +23,11 @@ func NewCustomerUsecase(customerRepo domain.CustomerRepository) domain.CustomerU
 
 func (u *customerUsecase) CreateCustomer(customer entity.Customer) error {
 	// TODO: Password hashing here!
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(customer.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	customer.Password = string(hashedPassword)
 
 	return u.customerRepo.CreateCustomer(customer)
 }
@@ -48,13 +58,26 @@ func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest)
 	if customer.ID == 0 {
 		return customerRes, errors.New("email or password is incorrect")
 	}
-
 	// TODO: Password validation here!
 
-	// TODO: Claim JWT here!
+	log.Println(customer.Password)
+	log.Println(customerReq.Password)
 
-	// MOCK
-	customerRes.AccessToken = "zzyy123456"
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, customerRes)
+	secretKey := []byte(os.Getenv("TOKEN_SECRET"))
+	tokenString, tokenErr := token.SignedString(secretKey)
+	if tokenErr != nil {
+		return customerRes, tokenErr
+	}
+	log.Println(tokenString)
+
+	customerRes.AccessToken = tokenString
 
 	return customerRes, nil
 }
+
+// passwordErr := bcrypt.CompareHashAndPassword([]byte(customer.Password), []byte(customerReq.Password))
+// if passwordErr != nil {
+// 	return customerRes, errors.New("email or password is incorrect")
+// }
+

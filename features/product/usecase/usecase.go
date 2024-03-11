@@ -9,7 +9,7 @@ type productUsecase struct {
 	productRepo domain.ProductRepository
 }
 
-func NewProductUsecase(productRepo domain.ProductRepository) domain.ProductUsecase {
+func NewUsecase(productRepo domain.ProductRepository) domain.ProductUsecase {
 	return &productUsecase{
 		productRepo: productRepo,
 	}

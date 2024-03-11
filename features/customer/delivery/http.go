@@ -16,13 +16,13 @@ type CustomerHandler struct {
 	usecase domain.CustomerUsecase
 }
 
-func NewCustomerHandler(e *echo.Group, u domain.CustomerUsecase) *CustomerHandler {
+func NewHandler(e *echo.Group, u domain.CustomerUsecase) *CustomerHandler {
 	h := CustomerHandler{usecase: u}
-	e.POST("", h.CreateCustomer)
-	e.GET("", h.ListCustomers)
+	e.POST("/customer", h.CreateCustomer)
+	e.GET("/customer", h.ListCustomers)
 	e.GET("/customer/:id", h.GetCustomer)
-	e.DELETE("/:id", h.DeleteCustomer)
-	e.PUT("/:id", h.UpdateCustomer)
+	e.DELETE("/customer/:id", h.DeleteCustomer)
+	e.PUT("/customer/:id", h.UpdateCustomer)
 	e.POST("/customer/login", h.CustomerLogin)
 
 	return &h

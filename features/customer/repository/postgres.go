@@ -12,7 +12,7 @@ type customerRepository struct {
 	db *gorm.DB
 }
 
-func NewCustomerRepository(db *gorm.DB) domain.CustomerRepository {
+func NewRepository(db *gorm.DB) domain.CustomerRepository {
 	return &customerRepository{
 		db: db,
 	}
@@ -101,6 +101,7 @@ func (r *customerRepository) GetCustomerByEmail(email string) (entity.Customer, 
 		log.Println("GetCustomerByEmail error:", err)
 		return customer, err
 	}
+
 
 	return customer, nil
 }

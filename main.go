@@ -110,23 +110,11 @@ func main() {
 	customerGroup := v1.Group("")
 	customerGroup.Use(middleware.CustomerAuth())
 
-	// {
-	// 	config := echojwt.Config{
-	// 		KeyFunc: middleware.GetKey,
-	// 	}
-	// 	v1.Use(echojwt.WithConfig(config))
-	// 	v1.GET("", middleware.Restricted)
-	// }
-
-	// adminV1Group := v1.Group("/admins")
-	// productV1Group := v1.Group("/product")
-	// customerV1Group := v1.Group("/customers")
-
 	adminDelivery.NewAdminHandler(adminGroup, adminUsecase.NewAdminUsecase(adminRepository.NewAdminRepository(DB)))
 	// adminDelivery.NewCustomerHandler(customerGroup, adminUsecase.NewAdminUsecase(adminRepository.NewAdminRepository(DB)))
 
-	productDelivery.NewProductHandler(customerGroup, productUsecase.NewProductUsecase(productRepository.NewProductRepository(DB)))
-	customerDelivery.NewCustomerHandler(customerGroup, customerUsecase.NewCustomerUsecase(customerRepository.NewCustomerRepository(DB)))
+	productDelivery.NewHandler(customerGroup, productUsecase.NewUsecase(productRepository.NewRepository(DB)))
+	customerDelivery.NewHandler(customerGroup, customerUsecase.NewUsecase(customerRepository.NewRepository(DB)))
 
 	serveGracefulShutdown(e)
 }
