@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"errors"
-	"log"
 	"order-management/domain"
 	"order-management/entity"
 	"os"
@@ -22,7 +21,6 @@ func NewUsecase(customerRepo domain.CustomerRepository) domain.CustomerUsecase {
 }
 
 func (u *customerUsecase) CreateCustomer(customer entity.Customer) error {
-	// TODO: Password hashing here!
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(customer.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
@@ -56,12 +54,13 @@ func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest)
 	}
 
 	if customer.ID == 0 {
-		return customerRes, errors.New("email or password is incorrect")
+		return customerRes, errors.New("email is incorrect")
 	}
-	// TODO: Password validation here!
 
-	log.Println(customer.Password)
-	log.Println(customerReq.Password)
+	passwordErr := bcrypt.CompareHashAndPassword([]byte(customer.Password), []byte(customerReq.Password))
+	if passwordErr != nil {
+		return customerRes, errors.New("password is incorrect")
+	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, customerRes)
 	secretKey := []byte(os.Getenv("TOKEN_SECRET"))
@@ -69,15 +68,8 @@ func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest)
 	if tokenErr != nil {
 		return customerRes, tokenErr
 	}
-	log.Println(tokenString)
 
 	customerRes.AccessToken = tokenString
 
 	return customerRes, nil
 }
-
-// passwordErr := bcrypt.CompareHashAndPassword([]byte(customer.Password), []byte(customerReq.Password))
-// if passwordErr != nil {
-// 	return customerRes, errors.New("email or password is incorrect")
-// }
-

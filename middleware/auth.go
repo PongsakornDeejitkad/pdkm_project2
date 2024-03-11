@@ -18,7 +18,7 @@ func AdminAuth() echo.MiddlewareFunc {
 
 			token := c.Request().Header.Get("Authorization")
 
-			if token != "zzyy123456" || token == "" {
+			if token != "admin" || token == "" {
 				return c.JSON(401, map[string]interface{}{
 					"message": errMessage,
 				})
@@ -41,7 +41,7 @@ func CustomerAuth() echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			errMessage := "Authentications failed."
 
-			ignoreRoutes := []string{"/v1/customer/login", "/v1/customers", "/v1/customer"}
+			ignoreRoutes := []string{"/v1/customer/login", "/v1/customers"}
 			for _, v := range ignoreRoutes {
 				if c.Path() == v {
 					return next(c)
@@ -50,7 +50,7 @@ func CustomerAuth() echo.MiddlewareFunc {
 
 			token := c.Request().Header.Get("Authorization")
 
-			if token != "zzyy123456" || token == "" {
+			if token != "admin" || token == "" {
 				return c.JSON(401, map[string]interface{}{
 					"message": errMessage,
 				})
@@ -62,6 +62,7 @@ func CustomerAuth() echo.MiddlewareFunc {
 			// c.Set("permissions", claims["permissions"])
 			// c.Set("role_id", claims["role_id"])
 			// c.Set("department_id", claims["department_id"])
+			c.Set("token", token)
 
 			return next(c)
 		}

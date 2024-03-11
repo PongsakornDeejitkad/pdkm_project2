@@ -53,6 +53,7 @@ func (h *CustomerHandler) CreateCustomer(c echo.Context) error {
 }
 
 func (h *CustomerHandler) ListCustomers(c echo.Context) error {
+
 	customers, err := h.usecase.ListCustomers()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
@@ -141,14 +142,13 @@ func (h *CustomerHandler) CustomerLogin(c echo.Context) error {
 	}
 
 	customerRes, err := h.usecase.CustomerLogin(customerReq)
-	if err == gorm.ErrRecordNotFound {
-		return c.JSON(http.StatusForbidden, map[string]interface{}{
-			"message": "email or password is incorrect",
-		})
-
-	}
 
 	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return c.JSON(http.StatusForbidden, map[string]interface{}{
+				"message": "email not found",
+			})
+		}
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": err,
 		})
