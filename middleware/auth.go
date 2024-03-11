@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"fmt"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -17,12 +19,17 @@ func AdminAuth() echo.MiddlewareFunc {
 			}
 
 			token := c.Request().Header.Get("Authorization")
+			if token == "admin" {
+				return next(c)
+			}
 
-			if token != "admin" || token == "" {
+			if token == "" {
 				return c.JSON(401, map[string]interface{}{
 					"message": errMessage,
 				})
 			}
+
+			// Token Validator
 
 			// c.Set("email", claims["email"])
 			// c.Set("name", claims["name"])
@@ -49,12 +56,19 @@ func CustomerAuth() echo.MiddlewareFunc {
 			}
 
 			token := c.Request().Header.Get("Authorization")
+			if token == "admin" {
+				return next(c)
+			}
 
-			if token != "admin" || token == "" {
+			if token == "" {
 				return c.JSON(401, map[string]interface{}{
 					"message": errMessage,
 				})
 			}
+
+			fmt.Println("token", token)
+
+			// Token Validator
 
 			// c.Set("email", claims["email"])
 			// c.Set("name", claims["name"])
