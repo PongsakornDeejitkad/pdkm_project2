@@ -18,7 +18,7 @@ type CustomerHandler struct {
 
 func NewHandler(e *echo.Group, u domain.CustomerUsecase) *CustomerHandler {
 	h := CustomerHandler{usecase: u}
-	e.POST("/customer", h.CreateCustomer)
+	e.POST("/customer/signin", h.CreateCustomer)
 	e.GET("/customer", h.ListCustomers)
 	e.GET("/customer/:id", h.GetCustomer)
 	e.DELETE("/customer/:id", h.DeleteCustomer)
@@ -106,6 +106,7 @@ func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 		log.Println("Invalid customer ID:", customerId)
 		return err
 	}
+	c.Bind(&customer)
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	validateError := validate.Struct(customer)

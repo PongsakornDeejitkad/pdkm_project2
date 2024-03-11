@@ -102,3 +102,19 @@ func (r *adminRepository) ListAdminTypes() ([]entity.AdminType, error) {
 	}
 	return adminTypes, nil
 }
+
+// func (r *adminRepository) GetAdminByEmail(email string) (entity.Admin, error) {
+// 	admin := entity.Admin{}
+
+// 	if err := r.db.Where("email = ?", email).First(&admin).Error; err != nil {
+// 		if err == gorm.ErrRecordNotFound {
+// 			log.Println("Admin not found")
+// 			return admin, err
+// 		}
+
+// 		log.Println("GetAdminByEmail error:", err)
+// 		return admin, err
+// 	}
+
+// 	return admin, nil
+// }

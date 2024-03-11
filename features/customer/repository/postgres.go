@@ -23,7 +23,7 @@ type adminRepository struct {
 }
 
 func (r *customerRepository) CreateCustomer(customer entity.Customer) error {
-	if err := r.db.Create(&customer).Error; err != nil {
+	if err := r.db.Order("id DESC").Create(&customer).Error; err != nil {
 		log.Println("Create Customer error: ", err)
 		return err
 	}
@@ -82,7 +82,7 @@ func (r *customerRepository) UpdateCustomer(id int, customer entity.Customer) er
 		log.Println("Error retrieving customer:", err)
 		return err
 	}
-	if err := r.db.Model(&entity.Admin{}).Where("id = ?", id).Updates(&customer).Error; err != nil {
+	if err := r.db.Model(&entity.Customer{}).Where("id = ?", id).Updates(&customer).Error; err != nil {
 		log.Println("Error updating customer:", err)
 		return err
 	}
@@ -101,7 +101,6 @@ func (r *customerRepository) GetCustomerByEmail(email string) (entity.Customer, 
 		log.Println("GetCustomerByEmail error:", err)
 		return customer, err
 	}
-
 
 	return customer, nil
 }

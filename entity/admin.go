@@ -3,6 +3,7 @@ package entity
 import (
 	"time"
 
+	"github.com/golang-jwt/jwt"
 	"gorm.io/gorm"
 )
 
@@ -30,4 +31,15 @@ type AdminType struct {
 	UpdatedAt  time.Time `json:"updated_at" gorm:"default:NOW()"`
 
 	Admins []Admin `json:"-" gorm:"foreignKey:TypeID"`
+}
+
+type AdminLoginRequest struct {
+	Email    string `json:"email" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
+
+type AdminLoginResponse struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	jwt.StandardClaims
 }

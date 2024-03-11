@@ -18,12 +18,12 @@ type AdminHandler struct {
 func NewAdminHandler(e *echo.Group, u domain.AdminUsecase) *AdminHandler {
 	h := AdminHandler{usecase: u}
 
-	e.GET("", h.ListAdmins)
+	e.GET("/admin", h.ListAdmins)
 	e.GET("/types", h.ListAdminTypes)
 	e.GET("/:id", h.GetAdmin)
-	e.POST("", h.CreateAdmin)
+	e.POST("/admin", h.CreateAdmin)
 	e.POST("/types", h.CreateAdminType)
-	e.PUT("/:id", h.UpdateAdmin)
+	e.PUT("admin/:id", h.UpdateAdmin)
 	e.DELETE("/:id", h.DeleteAdmin)
 
 	return &h

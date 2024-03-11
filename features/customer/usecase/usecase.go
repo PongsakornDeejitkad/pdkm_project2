@@ -5,6 +5,7 @@ import (
 	"order-management/domain"
 	"order-management/entity"
 	"os"
+	"time"
 
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
@@ -42,6 +43,11 @@ func (u *customerUsecase) DeleteCustomer(id int) error {
 }
 
 func (u *customerUsecase) UpdateCustomer(id int, customer entity.Customer) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(customer.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	customer.Password = string(hashedPassword)
 	return u.customerRepo.UpdateCustomer(id, customer)
 }
 
@@ -70,6 +76,17 @@ func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest)
 	}
 
 	customerRes.AccessToken = tokenString
+	customerRes.StandardClaims = jwt.StandardClaims{
+		ExpiresAt: time.Now().Add(1 * time.Hour).Unix(),
+	}
+
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, customerRes)
+	refreshTokenString, refreshTokenErr := refreshToken.SignedString(secretKey)
+	if refreshTokenErr != nil {
+		return customerRes, refreshTokenErr
+	}
+
+	customerRes.RefreshToken = refreshTokenString
 
 	return customerRes, nil
 }

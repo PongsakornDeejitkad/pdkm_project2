@@ -10,6 +10,8 @@ type AdminUsecase interface {
 	GetAdmin(id int) (*entity.Admin, error)
 	UpdateAdmin(id int, admin entity.Admin) error
 	DeleteAdmin(id int) error
+
+	// AdminLogin(entity.AdminLoginRequest) (entity.AdminLoginResponse, error)
 }
 
 type AdminRepository interface {
@@ -20,4 +22,6 @@ type AdminRepository interface {
 	GetAdmin(id int) (*entity.Admin, error)
 	UpdateAdmin(id int, admin entity.Admin) error
 	DeleteAdmin(id int) error
+
+	// GetAdminByEmail(email string) (*entity.Admin, error)
 }
