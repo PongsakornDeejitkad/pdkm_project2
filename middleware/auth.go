@@ -11,7 +11,7 @@ func AdminAuth() echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			errMessage := "Authentication failed."
 
-			ignoreRoutes := []string{"/admin/v1/login", "/admin/v1/app-setting/tax-year"}
+			ignoreRoutes := []string{"/admin/v1/login"}
 			for _, v := range ignoreRoutes {
 				if c.Request().RequestURI == v {
 					return next(c)
@@ -48,9 +48,9 @@ func CustomerAuth() echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			errMessage := "Authentications failed."
 
-			ignoreRoutes := []string{"/v1/customer/login", "/v1/customers"}
+			ignoreRoutes := []string{"/v1/customer/login"}
 			for _, v := range ignoreRoutes {
-				if c.Path() == v {
+				if c.Request().RequestURI == v {
 					return next(c)
 				}
 			}

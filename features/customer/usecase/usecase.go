@@ -68,7 +68,11 @@ func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest)
 		return customerRes, errors.New("password is incorrect")
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, customerRes)
+	accessTokenClaims := jwt.StandardClaims{
+		IssuedAt:  time.Now().Unix(),
+		ExpiresAt: time.Now().Add(1 * time.Hour).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims)
 	secretKey := []byte(os.Getenv("TOKEN_SECRET"))
 	tokenString, tokenErr := token.SignedString(secretKey)
 	if tokenErr != nil {
@@ -76,11 +80,14 @@ func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest)
 	}
 
 	customerRes.AccessToken = tokenString
-	customerRes.StandardClaims = jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(1 * time.Hour).Unix(),
+
+	refreshClaims := jwt.StandardClaims{
+		IssuedAt:  time.Now().Unix(),
+		ExpiresAt: time.Now().Add(time.Hour * 48).Unix(),
 	}
 
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, customerRes)
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
+
 	refreshTokenString, refreshTokenErr := refreshToken.SignedString(secretKey)
 	if refreshTokenErr != nil {
 		return customerRes, refreshTokenErr
