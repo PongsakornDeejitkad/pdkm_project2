@@ -68,32 +68,24 @@ func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest)
 		return customerRes, errors.New("password is incorrect")
 	}
 
-	accessTokenClaims := jwt.StandardClaims{
-		IssuedAt:  time.Now().Unix(),
-		ExpiresAt: time.Now().Add(1 * time.Hour).Unix(),
+	claims := entity.CustomerClaims{
+		Id:       customer.ID,
+		Username: customer.Username,
+		StandardClaims: jwt.StandardClaims{
+			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: time.Now().Add(1 * time.Hour).Unix(),
+		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims)
-	secretKey := []byte(os.Getenv("TOKEN_SECRET"))
+
+	secretKey := []byte(os.Getenv("key.secretKey"))
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
 	tokenString, tokenErr := token.SignedString(secretKey)
 	if tokenErr != nil {
 		return customerRes, tokenErr
 	}
 
 	customerRes.AccessToken = tokenString
-
-	refreshClaims := jwt.StandardClaims{
-		IssuedAt:  time.Now().Unix(),
-		ExpiresAt: time.Now().Add(time.Hour * 48).Unix(),
-	}
-
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
-
-	refreshTokenString, refreshTokenErr := refreshToken.SignedString(secretKey)
-	if refreshTokenErr != nil {
-		return customerRes, refreshTokenErr
-	}
-
-	customerRes.RefreshToken = refreshTokenString
 
 	return customerRes, nil
 }

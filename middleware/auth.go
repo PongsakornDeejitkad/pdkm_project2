@@ -2,7 +2,10 @@ package middleware
 
 import (
 	"fmt"
+	"log"
+	"os"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 )
 
@@ -48,27 +51,44 @@ func CustomerAuth() echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			errMessage := "Authentications failed."
 
-			ignoreRoutes := []string{"/v1/customer/login"}
+			ignoreRoutes := []string{"/v1/customer/login", "v1/customer/signin"}
 			for _, v := range ignoreRoutes {
 				if c.Request().RequestURI == v {
 					return next(c)
 				}
 			}
 
-			token := c.Request().Header.Get("Authorization")
-			if token == "admin" {
+			accessToken := c.Request().Header.Get("Authorization")
+			if accessToken == "admin" {
 				return next(c)
 			}
 
-			if token == "" {
+			if accessToken == "" {
 				return c.JSON(401, map[string]interface{}{
 					"message": errMessage,
 				})
 			}
 
-			fmt.Println("token", token)
+			claims := jwt.MapClaims{}
+			secretKey := os.Getenv("key.secretKey")
+			token, err := jwt.ParseWithClaims(accessToken, claims, func(token *jwt.Token) (interface{}, error) {
+				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, fmt.Errorf("error, unexpected signing method: %v", token.Header["alg"])
+				}
+				return []byte(secretKey), nil
+			})
+			if err != nil {
+				return c.JSON(401, map[string]interface{}{
+					"message": errMessage,
+				})
+			}
 
-			// Token Validator
+			if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+				log.Println(claims, "cccccccclaims")
+				c.Set("user_id", claims["user_id"])
+				c.Set("username", claims["username"])
+				return next(c)
+			}
 
 			// c.Set("email", claims["email"])
 			// c.Set("name", claims["name"])

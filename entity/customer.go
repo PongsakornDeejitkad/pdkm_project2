@@ -26,5 +26,17 @@ type CustomerLoginRequest struct {
 type CustomerLoginResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
+}
+
+type CustomerClaims struct {
+	Id       int    `json:"id"`
+	Username string `json:"username"`
 	jwt.StandardClaims
+}
+
+type RefreshRequest struct {
+	RefreshToken   string `json:"refresh_token"`
+	CustomerID     string `json:"customer_id"`
+	CustomerSecret string `json:"customer_secret"`
+	GrantType      string `json:"grant_type"`
 }
