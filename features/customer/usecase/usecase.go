@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -68,6 +69,7 @@ func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest)
 		return customerRes, errors.New("password is incorrect")
 	}
 
+	// Generate access token
 	claims := entity.CustomerClaims{
 		Id:       customer.ID,
 		Username: customer.Username,
@@ -85,7 +87,18 @@ func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest)
 		return customerRes, tokenErr
 	}
 
+	//  Generate refresh token
+	refreshToken := entity.RefreshRequest{
+		RefreshToken: uuid.New().String(),
+		CustomerID:   customer.ID,
+		StandardClaims: jwt.StandardClaims{
+			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
+		},
+	}
+
 	customerRes.AccessToken = tokenString
+	customerRes.RefreshToken = refreshToken.RefreshToken
 
 	return customerRes, nil
 }

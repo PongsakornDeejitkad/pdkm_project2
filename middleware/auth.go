@@ -51,7 +51,7 @@ func CustomerAuth() echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			errMessage := "Authentications failed."
 
-			ignoreRoutes := []string{"/v1/customer/login", "v1/customer/signin"}
+			ignoreRoutes := []string{"/v1/customer/login", "/v1/customer/signin"}
 			for _, v := range ignoreRoutes {
 				if c.Request().RequestURI == v {
 					return next(c)
@@ -72,6 +72,7 @@ func CustomerAuth() echo.MiddlewareFunc {
 			claims := jwt.MapClaims{}
 			secretKey := os.Getenv("key.secretKey")
 			token, err := jwt.ParseWithClaims(accessToken, claims, func(token *jwt.Token) (interface{}, error) {
+				log.Println("token", token)
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					return nil, fmt.Errorf("error, unexpected signing method: %v", token.Header["alg"])
 				}
@@ -84,18 +85,11 @@ func CustomerAuth() echo.MiddlewareFunc {
 			}
 
 			if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-				log.Println(claims, "cccccccclaims")
 				c.Set("user_id", claims["user_id"])
 				c.Set("username", claims["username"])
 				return next(c)
 			}
 
-			// c.Set("email", claims["email"])
-			// c.Set("name", claims["name"])
-			// c.Set("surname", claims["surname"])
-			// c.Set("permissions", claims["permissions"])
-			// c.Set("role_id", claims["role_id"])
-			// c.Set("department_id", claims["department_id"])
 			c.Set("token", token)
 
 			return next(c)
