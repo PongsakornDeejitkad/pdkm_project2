@@ -24,6 +24,7 @@ func NewHandler(e *echo.Group, u domain.CustomerUsecase) *CustomerHandler {
 	e.DELETE("/customer/:id", h.DeleteCustomer)
 	e.PUT("/customer/:id", h.UpdateCustomer)
 	e.POST("/customer/login", h.CustomerLogin)
+	e.POST("/customer/refreshtoken", h.RefreshRequest)
 
 	return &h
 }
@@ -159,7 +160,7 @@ func (h *CustomerHandler) CustomerLogin(c echo.Context) error {
 }
 
 func (h *CustomerHandler) RefreshRequest(c echo.Context) error {
-	RefreshRequestToken := entity.RefreshRequest{}
+	RefreshRequestToken := entity.RefreshTokenRequest{}
 	c.Bind(&RefreshRequestToken)
 
 	customerRes, _ := h.usecase.RefreshRequest(RefreshRequestToken)

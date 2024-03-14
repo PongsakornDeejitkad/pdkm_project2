@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"errors"
+	"log"
 	"order-management/domain"
 	"order-management/entity"
 	"os"
@@ -87,7 +88,7 @@ func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest)
 	}
 
 	//  Generate refresh token
-	RefreshRequest := entity.RefreshRequest{
+	RefreshTokenResponse := entity.RefreshTokenResponse{
 		CustomerID: customer.ID,
 		Username:   customer.Username,
 		StandardClaims: jwt.StandardClaims{
@@ -95,7 +96,7 @@ func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest)
 			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
 		},
 	}
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, RefreshRequest)
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, RefreshTokenResponse)
 	refreshTokenString, refreshTokenErr := refreshToken.SignedString(secretKey)
 	if refreshTokenErr != nil {
 		return customerRes, refreshTokenErr
@@ -107,21 +108,27 @@ func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest)
 	return customerRes, nil
 }
 
-func (u *customerUsecase) RefreshRequest(RefreshRequest entity.RefreshRequest) (entity.CustomerLoginResponse, error) {
+func (u *customerUsecase) RefreshRequest(RefreshRequest entity.RefreshTokenRequest) (entity.CustomerLoginResponse, error) {
 	customerRes := entity.CustomerLoginResponse{}
 	parser := jwt.Parser{}
 
-	refreshToken, _, _ := parser.ParseUnverified(RefreshRequest.RefreshToken, jwt.MapClaims{})
-
+	refreshToken, _, err := parser.ParseUnverified(RefreshRequest.RefreshToken, jwt.MapClaims{})
+	if err != nil {
+		log.Println("Error parsing refresh token:", err)
+		return customerRes, err
+	}
 	claims := refreshToken.Claims.(jwt.MapClaims)
-	customerID := claims["customer_id"].(int)
-	username := claims["username"].(string)
-	exp := claims["exp"].(int64)
+	customerID, _ := claims["customer_id"].(int)
+	username, _ := claims["username"].(string)
+	expFloat, _ := claims["exp"].(float64)
+	exp := int64(expFloat)
 
 	currentTime := time.Now().Unix()
+
 	if exp < currentTime {
 		return customerRes, errors.New("RefreshToken has expired")
 	} else {
+		log.Println("I'm here2")
 		claimsNew := entity.CustomerClaims{
 			Id:       customerID,
 			Username: username,
@@ -130,8 +137,7 @@ func (u *customerUsecase) RefreshRequest(RefreshRequest entity.RefreshRequest) (
 				ExpiresAt: time.Now().Add(1 * time.Hour).Unix(),
 			},
 		}
-
-		secretKey := os.Getenv("key.secretKey")
+		secretKey := []byte(os.Getenv("key.secretKey"))
 		newAccessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsNew)
 		newAccessTokenString, newAccessTokenErr := newAccessToken.SignedString(secretKey)
 		if newAccessTokenErr != nil {

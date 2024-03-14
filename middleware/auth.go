@@ -50,7 +50,7 @@ func CustomerAuth() echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			errMessage := "Authentications failed."
 
-			ignoreRoutes := []string{"/v1/customer/login", "/v1/customer/signin"}
+			ignoreRoutes := []string{"/v1/customer/login", "/v1/customer/signin", "/v1/customer/refreshtoken"}
 			for _, v := range ignoreRoutes {
 				if c.Request().RequestURI == v {
 					return next(c)
