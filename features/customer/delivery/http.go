@@ -157,3 +157,12 @@ func (h *CustomerHandler) CustomerLogin(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, customerRes)
 }
+
+func (h *CustomerHandler) RefreshRequest(c echo.Context) error {
+	RefreshRequestToken := entity.RefreshRequest{}
+	c.Bind(&RefreshRequestToken)
+
+	customerRes, _ := h.usecase.RefreshRequest(RefreshRequestToken)
+
+	return c.JSON(http.StatusOK, customerRes)
+}

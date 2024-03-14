@@ -10,6 +10,7 @@ type CustomerUsecase interface {
 	UpdateCustomer(id int, customer entity.Customer) error
 
 	CustomerLogin(entity.CustomerLoginRequest) (entity.CustomerLoginResponse, error)
+	RefreshRequest(RefreshRequest entity.RefreshRequest) (entity.CustomerLoginResponse, error)
 }
 
 type CustomerRepository interface {

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -88,17 +87,59 @@ func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest)
 	}
 
 	//  Generate refresh token
-	refreshToken := entity.RefreshRequest{
-		RefreshToken: uuid.New().String(),
-		CustomerID:   customer.ID,
+	RefreshRequest := entity.RefreshRequest{
+		CustomerID: customer.ID,
+		Username:   customer.Username,
 		StandardClaims: jwt.StandardClaims{
 			IssuedAt:  time.Now().Unix(),
 			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
 		},
 	}
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, RefreshRequest)
+	refreshTokenString, refreshTokenErr := refreshToken.SignedString(secretKey)
+	if refreshTokenErr != nil {
+		return customerRes, refreshTokenErr
+	}
 
 	customerRes.AccessToken = tokenString
-	customerRes.RefreshToken = refreshToken.RefreshToken
+	customerRes.RefreshToken = refreshTokenString
+
+	return customerRes, nil
+}
+
+func (u *customerUsecase) RefreshRequest(RefreshRequest entity.RefreshRequest) (entity.CustomerLoginResponse, error) {
+	customerRes := entity.CustomerLoginResponse{}
+	parser := jwt.Parser{}
+
+	refreshToken, _, _ := parser.ParseUnverified(RefreshRequest.RefreshToken, jwt.MapClaims{})
+
+	claims := refreshToken.Claims.(jwt.MapClaims)
+	customerID := claims["customer_id"].(int)
+	username := claims["username"].(string)
+	exp := claims["exp"].(int64)
+
+	currentTime := time.Now().Unix()
+	if exp < currentTime {
+		return customerRes, errors.New("RefreshToken has expired")
+	} else {
+		claimsNew := entity.CustomerClaims{
+			Id:       customerID,
+			Username: username,
+			StandardClaims: jwt.StandardClaims{
+				IssuedAt:  time.Now().Unix(),
+				ExpiresAt: time.Now().Add(1 * time.Hour).Unix(),
+			},
+		}
+
+		secretKey := os.Getenv("key.secretKey")
+		newAccessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsNew)
+		newAccessTokenString, newAccessTokenErr := newAccessToken.SignedString(secretKey)
+		if newAccessTokenErr != nil {
+			return customerRes, newAccessTokenErr
+		}
+		customerRes.AccessToken = newAccessTokenString
+		customerRes.RefreshToken = RefreshRequest.RefreshToken
+	}
 
 	return customerRes, nil
 }
