@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/golang-jwt/jwt"
@@ -72,7 +71,6 @@ func CustomerAuth() echo.MiddlewareFunc {
 			claims := jwt.MapClaims{}
 			secretKey := os.Getenv("key.secretKey")
 			token, err := jwt.ParseWithClaims(accessToken, claims, func(token *jwt.Token) (interface{}, error) {
-				log.Println("token", token)
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					return nil, fmt.Errorf("error, unexpected signing method: %v", token.Header["alg"])
 				}
