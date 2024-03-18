@@ -96,6 +96,7 @@ func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest)
 			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
 		},
 	}
+
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, RefreshTokenResponse)
 	refreshTokenString, refreshTokenErr := refreshToken.SignedString(secretKey)
 	if refreshTokenErr != nil {
@@ -117,9 +118,12 @@ func (u *customerUsecase) RefreshRequest(RefreshRequest entity.RefreshTokenReque
 		log.Println("Error parsing refresh token:", err)
 		return customerRes, err
 	}
+
 	claims := refreshToken.Claims.(jwt.MapClaims)
+
 	customerID, _ := claims["customer_id"].(int)
 	username, _ := claims["username"].(string)
+
 	expFloat, _ := claims["exp"].(float64)
 	exp := int64(expFloat)
 
@@ -128,7 +132,6 @@ func (u *customerUsecase) RefreshRequest(RefreshRequest entity.RefreshTokenReque
 	if exp < currentTime {
 		return customerRes, errors.New("RefreshToken has expired")
 	} else {
-		log.Println("I'm here2")
 		claimsNew := entity.CustomerClaims{
 			Id:       customerID,
 			Username: username,
@@ -137,12 +140,15 @@ func (u *customerUsecase) RefreshRequest(RefreshRequest entity.RefreshTokenReque
 				ExpiresAt: time.Now().Add(1 * time.Hour).Unix(),
 			},
 		}
+
 		secretKey := []byte(os.Getenv("key.secretKey"))
 		newAccessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsNew)
 		newAccessTokenString, newAccessTokenErr := newAccessToken.SignedString(secretKey)
+
 		if newAccessTokenErr != nil {
 			return customerRes, newAccessTokenErr
 		}
+
 		customerRes.AccessToken = newAccessTokenString
 		customerRes.RefreshToken = RefreshRequest.RefreshToken
 	}

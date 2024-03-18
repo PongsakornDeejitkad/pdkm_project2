@@ -82,13 +82,15 @@ func CustomerAuth() echo.MiddlewareFunc {
 				})
 			}
 
-			if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-				c.Set("user_id", claims["user_id"])
-				c.Set("username", claims["username"])
-				return next(c)
+			claims, ok := token.Claims.(jwt.MapClaims)
+			if !ok || !token.Valid {
+				return c.JSON(401, map[string]interface{}{
+					"message": errMessage,
+				})
 			}
 
-			c.Set("token", token)
+			c.Set("user_id", claims["user_id"])
+			c.Set("username", claims["username"])
 
 			return next(c)
 		}
