@@ -5,10 +5,10 @@ import (
 	"log"
 	"order-management/domain"
 	"order-management/entity"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/spf13/viper"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -53,8 +53,8 @@ func (u *customerUsecase) UpdateCustomer(id int, customer entity.Customer) error
 }
 
 func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest) (entity.CustomerLoginResponse, error) {
+	viper.SetConfigFile("config.yaml")
 	customerRes := entity.CustomerLoginResponse{}
-
 	customer, err := u.customerRepo.GetCustomerByEmail(customerReq.Email)
 	if err != nil {
 		return customerRes, err
@@ -70,16 +70,17 @@ func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest)
 	}
 
 	// Generate access token
+	timeExpAcc := viper.GetInt("token.timeExpireAccessToken")
 	claims := entity.CustomerClaims{
 		Id:       customer.ID,
 		Username: customer.Username,
 		StandardClaims: jwt.StandardClaims{
 			IssuedAt:  time.Now().Unix(),
-			ExpiresAt: time.Now().Add(1 * time.Hour).Unix(),
+			ExpiresAt: time.Now().Add(time.Duration(timeExpAcc) * time.Hour).Unix(),
 		},
 	}
 
-	secretKey := []byte(os.Getenv("key.secretKey"))
+	secretKey := []byte(viper.GetString("key.secretKey"))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	tokenString, tokenErr := token.SignedString(secretKey)
@@ -88,12 +89,12 @@ func (u *customerUsecase) CustomerLogin(customerReq entity.CustomerLoginRequest)
 	}
 
 	//  Generate refresh token
+	timeExpRefresh := viper.GetInt("token.timeExpireRefreshToken")
 	RefreshTokenResponse := entity.RefreshTokenResponse{
 		CustomerID: customer.ID,
-		Username:   customer.Username,
 		StandardClaims: jwt.StandardClaims{
 			IssuedAt:  time.Now().Unix(),
-			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
+			ExpiresAt: time.Now().Add(time.Duration(timeExpRefresh) * time.Hour).Unix(),
 		},
 	}
 
@@ -120,28 +121,33 @@ func (u *customerUsecase) RefreshRequest(RefreshRequest entity.RefreshTokenReque
 	}
 
 	claims := refreshToken.Claims.(jwt.MapClaims)
+	customerID, _ := claims["customer_id"].(float64)
 
-	customerID, _ := claims["customer_id"].(int)
-	username, _ := claims["username"].(string)
-
-	expFloat, _ := claims["exp"].(float64)
-	exp := int64(expFloat)
+	refreshTokenExpFloat, _ := claims["exp"].(float64)
+	refreshTokenExpInt := int64(refreshTokenExpFloat)
 
 	currentTime := time.Now().Unix()
 
-	if exp < currentTime {
+	if refreshTokenExpInt < currentTime {
 		return customerRes, errors.New("RefreshToken has expired")
 	} else {
+		customer, err := u.customerRepo.GetCustomer(int(customerID))
+		if err != nil {
+			log.Println("message", err)
+			return customerRes, nil
+		}
+		viper.SetConfigFile("config.yaml")
+		timeExpAcc := viper.GetInt("token.timeExpireAccessToken")
 		claimsNew := entity.CustomerClaims{
-			Id:       customerID,
-			Username: username,
+			Id:       int(customerID),
+			Username: customer.Username,
 			StandardClaims: jwt.StandardClaims{
 				IssuedAt:  time.Now().Unix(),
-				ExpiresAt: time.Now().Add(1 * time.Hour).Unix(),
+				ExpiresAt: time.Now().Add(time.Duration(timeExpAcc) * time.Hour).Unix(),
 			},
 		}
 
-		secretKey := []byte(os.Getenv("key.secretKey"))
+		secretKey := []byte(viper.GetString("key.secretKey"))
 		newAccessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsNew)
 		newAccessTokenString, newAccessTokenErr := newAccessToken.SignedString(secretKey)
 

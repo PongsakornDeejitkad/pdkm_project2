@@ -37,7 +37,6 @@ type CustomerClaims struct {
 type RefreshTokenResponse struct {
 	RefreshToken string `json:"refresh_token"`
 	CustomerID   int    `json:"customer_id"`
-	Username     string `json:"username"`
 	jwt.StandardClaims
 }
 

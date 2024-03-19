@@ -2,10 +2,10 @@ package middleware
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
+	"github.com/spf13/viper"
 )
 
 func AdminAuth() echo.MiddlewareFunc {
@@ -69,7 +69,8 @@ func CustomerAuth() echo.MiddlewareFunc {
 			}
 
 			claims := jwt.MapClaims{}
-			secretKey := os.Getenv("key.secretKey")
+			viper.SetConfigFile("config.yaml")
+			secretKey := viper.GetString("key.secretKey")
 			token, err := jwt.ParseWithClaims(accessToken, claims, func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					return nil, fmt.Errorf("error, unexpected signing method: %v", token.Header["alg"])
