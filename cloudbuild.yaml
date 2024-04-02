@@ -15,20 +15,21 @@ steps:
         "asia-southeast1-docker.pkg.dev/${_PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}",
       ]
 
-  - name: "gcr.io/cloud-builders/gcloud"
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
     args:
       [
         "run",
         "deploy",
-        "--image=asia-southeast1-docker.pkg.dev/${_PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}",
+        "${_SERVICE_NAME}",
+        "--image",
+        "asia-southeast1-docker.pkg.dev/${_PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}",
         "--region",
         "asia-southeast1",
         "--platform",
         "managed",
+        "--allow-unauthenticated",
       ]
-
-images:
-  - asia-southeast1-docker.pkg.dev/${_PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}
 
 substitutions:
   _PROJECT_ID: gkh-outsource
