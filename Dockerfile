@@ -1,8 +1,9 @@
 FROM golang:1.22.1-alpine3.19 AS builder
-WORKDIR /intern-order-management
+WORKDIR /pdkm_project2
 COPY . .
 
 RUN go mod tidy
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o ./intern-order-management .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o ./pdkm_project2 .
 
-ENTRYPOINT [ "./intern-order-management" ]
+ENTRYPOINT [ "./pdkm_project2" ]
+
