@@ -120,6 +120,7 @@ func main() {
 }
 
 // Feature Customer
+// Feature User
 
 func connectDB() error {
 	connectionString := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s",
