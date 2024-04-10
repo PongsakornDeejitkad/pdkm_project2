@@ -91,6 +91,8 @@ func init() {
 }
 
 func main() {
+	fmt.Println("Fix critical bug")
+
 	e := echo.New()
 
 	e.Use(echoMiddleware.Logger())
