@@ -119,6 +119,8 @@ func main() {
 	serveGracefulShutdown(e)
 }
 
+// Feature Customer
+
 func connectDB() error {
 	connectionString := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s",
 		utils.ViperGetString("postgres.host"),
