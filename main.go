@@ -78,10 +78,10 @@ func migrateDB() {
 func init() {
 	runEnv = os.Getenv("RUN_ENV")
 	if runEnv == "" {
-		runEnv = "dev"
+		runEnv = "local"
 	}
 
-	utils.InitViper()
+	utils.InitViper(runEnv)
 
 	var err error
 	if err = connectDB(); err != nil {
