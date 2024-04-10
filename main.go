@@ -6,65 +6,29 @@ import (
 	"log"
 	"net/http"
 	"order-management/entity"
-	adminDelivery "order-management/features/admin/delivery/admin"
+	adminDelivery "order-management/features/admin/delivery"
 	adminRepository "order-management/features/admin/repository"
 	adminUsecase "order-management/features/admin/usecase"
+	customerDelivery "order-management/features/customer/delivery"
+	customerRepository "order-management/features/customer/repository"
+	customerUsecase "order-management/features/customer/usecase"
+	productDelivery "order-management/features/product/delivery"
+	productRepository "order-management/features/product/repository"
+	productUsecase "order-management/features/product/usecase"
+	"order-management/middleware"
 	"order-management/utils"
 	"os"
 	"os/signal"
 	"time"
 
 	"github.com/labstack/echo/v4"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var runEnv string
 var DB *gorm.DB
-
-func init() {
-	runEnv = os.Getenv("RUN_ENV")
-	if runEnv == "" {
-		runEnv = "dev"
-	}
-
-	utils.InitViper()
-
-	var err error
-	if err = connectDB(); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func main() {
-	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]interface{}{"status": true})
-	})
-
-	v1 := e.Group("/v1")
-
-	adminV1Group := v1.Group("/admin")
-	adminDelivery.NewAdminHandler(adminV1Group, adminUsecase.NewAdminUsecase(adminRepository.NewAdminRepository(DB)))
-
-	serveGracefulShutdown(e)
-}
-
-func connectDB() error {
-	connectionString := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s",
-		utils.ViperGetString("postgres.host"),
-		utils.ViperGetString("postgres.user"),
-		utils.ViperGetString("postgres.password"),
-		utils.ViperGetString("postgres.dbname"),
-		utils.ViperGetString("postgres.port"))
-
-	var err error
-	DB, err = gorm.Open(postgres.Open(connectionString), &gorm.Config{})
-
-	// migrateDB()
-
-	return err
-}
 
 func serveGracefulShutdown(e *echo.Echo) {
 	go func() {
@@ -104,9 +68,74 @@ func migrateDB() {
 		// &Products{},
 		// &ProductsCategory{},
 		&entity.Admin{},
-		// &AdminType{},
+		&entity.AdminType{},
 		// &Sessions{},
-		&entity.User{},
+		&entity.Customer{},
 	// &Orders{},
 	)
 }
+
+func init() {
+	runEnv = os.Getenv("RUN_ENV")
+	if runEnv == "" {
+		runEnv = "local"
+	}
+
+	utils.InitViper(runEnv)
+
+	var err error
+	if err = connectDB(); err != nil {
+		log.Fatal(err)
+	}
+
+}
+
+func main() {
+	e := echo.New()
+
+	e.Use(echoMiddleware.Logger())
+	e.Use(echoMiddleware.Recover())
+
+	// Unauthenticated route
+	e.GET("/", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]interface{}{"success": true})
+	})
+
+	// Restricted group
+	v1 := e.Group("/v1")
+
+	adminGroup := v1.Group("")
+	adminGroup.Use(middleware.AdminAuth())
+
+	customerGroup := v1.Group("")
+	customerGroup.Use(middleware.CustomerAuth())
+
+	adminDelivery.NewAdminHandler(adminGroup, adminUsecase.NewAdminUsecase(adminRepository.NewAdminRepository(DB)))
+	// adminDelivery.NewCustomerHandler(customerGroup, adminUsecase.NewAdminUsecase(adminRepository.NewAdminRepository(DB)))
+
+	productDelivery.NewHandler(customerGroup, productUsecase.NewUsecase(productRepository.NewRepository(DB)))
+	customerDelivery.NewHandler(customerGroup, customerUsecase.NewUsecase(customerRepository.NewRepository(DB)))
+
+	serveGracefulShutdown(e)
+}
+
+// Feature Customer
+
+func connectDB() error {
+	connectionString := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s",
+		utils.ViperGetString("postgres.host"),
+		utils.ViperGetString("postgres.user"),
+		utils.ViperGetString("postgres.password"),
+		utils.ViperGetString("postgres.dbname"),
+		utils.ViperGetString("postgres.port"))
+
+	var err error
+	DB, err = gorm.Open(postgres.Open(connectionString), &gorm.Config{})
+
+	// migrateDB()
+
+	return err
+}
+
+// Feature Admin
+// Feature Admin 2

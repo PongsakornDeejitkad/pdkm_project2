@@ -18,3 +18,26 @@ func NewAdminUsecase(adminRepo domain.AdminRepository) domain.AdminUsecase {
 func (u *adminUsecase) CreateAdmin(admin entity.Admin) error {
 	return u.adminRepo.CreateAdmin(admin)
 }
+
+func (u *adminUsecase) ListAdmins() ([]entity.Admin, error) {
+	return u.adminRepo.ListAdmins()
+}
+
+func (u *adminUsecase) GetAdmin(id int) (*entity.Admin, error) {
+	return u.adminRepo.GetAdmin(id)
+}
+func (u *adminUsecase) UpdateAdmin(id int, admin entity.Admin) error {
+	return u.adminRepo.UpdateAdmin(id, admin)
+}
+
+func (u *adminUsecase) DeleteAdmin(id int) error {
+	return u.adminRepo.DeleteAdmin(id)
+}
+
+func (u *adminUsecase) CreateAdminType(adminType entity.AdminType) error {
+	return u.adminRepo.CreateAdminType(adminType)
+}
+
+func (u *adminUsecase) ListAdminTypes() ([]entity.AdminType, error) {
+	return u.adminRepo.ListAdminTypes()
+}
